@@ -92,6 +92,11 @@ class NullAction(DragAction):
                 if isinstance(item, Jump) and item.item.tooltip is not None:
                     # Process escape sequences in tooltip text
                     tooltip_text = item.item.tooltip.decode().replace('\\n', '\n')
+                    tooltip_text = get_safe_tooltip_text(
+                        tooltip_text,
+                        NullAction._tooltip_label,
+                        NullAction._tooltip_window
+                    )
                     NullAction._tooltip_label.set_markup(tooltip_text)
                     NullAction._tooltip_window.resize(
                       NullAction._tooltip_label.get_preferred_width().natural_width,
@@ -169,3 +174,28 @@ class ZoomAreaAction(DragAction):
 
     def abort(self):
         self.dot_widget.queue_draw()
+
+
+def get_safe_tooltip_text(text, label, window):
+    """Adjust tooltip text to prevent Cairo surface creation crashes using widest character estimation."""
+    if not text:
+        return ""
+
+    # Cairo has a maximum surface dimension of 32767
+    CAIRO_MAX = 32767
+
+    # Get window position
+    x, _ = window.get_position()
+    available_width = CAIRO_MAX - x
+
+    # Get width of widest common character (M is typically widest)
+    label.set_markup("M")
+    max_char_width = label.get_preferred_width().natural_width
+
+    # Calculate safe number of characters
+    max_chars = int(available_width / max_char_width)
+
+    if len(text) <= max_chars:
+        return text
+
+    return text[:max_chars - 3] + "..."
