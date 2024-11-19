@@ -90,7 +90,9 @@ class NullAction(DragAction):
             if item is not NullAction._tooltip_item:
                 # TODO: Should fold this into a method.
                 if isinstance(item, Jump) and item.item.tooltip is not None:
-                    NullAction._tooltip_label.set_markup(item.item.tooltip.decode())
+                    # Process escape sequences in tooltip text
+                    tooltip_text = item.item.tooltip.decode().replace('\\n', '\n')
+                    NullAction._tooltip_label.set_markup(tooltip_text)
                     NullAction._tooltip_window.resize(
                       NullAction._tooltip_label.get_preferred_width().natural_width,
                       NullAction._tooltip_label.get_preferred_height().natural_height

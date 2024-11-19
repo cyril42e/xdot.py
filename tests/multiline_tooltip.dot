@@ -1,0 +1,5 @@
+digraph {
+    node1 [tooltip="First line\nSecond line"];
+    node2 [tooltip="Single line"];
+    node1 -> node2;
+} 
